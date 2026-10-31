@@ -103,7 +103,7 @@ for i, (sid, img, s, e, rot, (k0, k1), org) in enumerate(SCENES):
     scene_html.append(f'''
       <div id="{sid}" class="clip scene" data-start="{s:.2f}" data-duration="{e - s:.2f}" data-track-index="1" style="z-index:{z}">
         <div class="panel" id="{sid}-panel">
-          <img id="{sid}-img" class="art" src="assets/{img}.png" alt="" style="transform-origin:{org}" />
+          <img id="{sid}-img" class="art" src="assets/{img}.jpg" alt="" style="transform-origin:{org}" />
           <div class="halftone"></div>
         </div>
       </div>''')
@@ -202,7 +202,7 @@ html, body { width:1080px; height:1920px; overflow:hidden; background:var(--pape
 .tag.yellow { background:var(--yellow); } .tag.white { background:var(--white); } .tag.red { background:var(--red); color:var(--white); }
 .stamp { position:absolute; left:50%; top:820px; padding:18px 40px 8px; border:12px solid currentColor; font-size:118px; line-height:.95; text-align:center; white-space:nowrap; background:rgba(255,248,234,.92); }
 .stamp.red { color:var(--red); } .stamp.yellowstamp { color:var(--ink); background:var(--yellow); box-shadow:14px 14px 0 var(--ink); border-color:var(--ink); }
-.stamp.big { font-size:170px; } .stamp small { font-size:96px; }
+.stamp.big { font-size:170px; top:420px; } .stamp small { font-size:96px; }
 .scoreboard { position:absolute; left:50%; top:470px; display:flex; align-items:center; gap:18px; padding:30px 50px 14px; background:#0d0d0d; border:12px solid var(--yellow); box-shadow:0 0 0 10px var(--ink), 18px 18px 0 10px rgba(0,0,0,.6); }
 .sb-n { font-size:300px; line-height:.9; color:var(--yellow); text-shadow:0 0 28px rgba(255,204,0,.55); }
 .sb-dash { font-size:200px; color:var(--white); }
