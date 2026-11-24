@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rehearsing Film Preview</title>
+    <style>
+      :root { --bg: #f4efe6; --ink: #1a1612; --muted: #6f675c; }
+      @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0c0a08; --ink: #f3ecdf; --muted: #8b8478; } }
+      :root[data-theme="dark"] { --bg: #0c0a08; --ink: #f3ecdf; --muted: #8b8478; }
+      html, body { margin: 0; min-height: 100%; }
+      body { background: var(--bg); color: var(--ink); font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px; box-sizing: border-box; min-height: 100vh; }
+      hyperframes-player { display: block; width: min(100%, calc((100vh - 90px) * 0.8)); aspect-ratio: 4 / 5; border-radius: 14px; overflow: hidden; background: #0c0a08; }
+      p { margin: 0; font-size: 13px; color: var(--muted); text-align: center; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@hyperframes/player@0.9.88/dist/hyperframes-player.global.js"></script>
+  </head>
+  <body>
+    <hyperframes-player src="film.html" width="1080" height="1350" controls></hyperframes-player>
+    <p>What are you rehearsing? · 1080 × 1350 · 27s · press play for sound</p>
+  </body>
+</html>

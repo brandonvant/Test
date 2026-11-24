@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1350" />
+    <title>What are you rehearsing?</title>
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Instrument Serif";
+        font-style: italic;
+        font-weight: 400;
+        src: url("assets/fonts/instrument-serif-latin-400-italic.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Inter Tight";
+        font-weight: 500;
+        src: url("assets/fonts/inter-tight-latin-500-normal.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Inter Tight";
+        font-weight: 600;
+        src: url("assets/fonts/inter-tight-latin-600-normal.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Inter Tight";
+        font-weight: 700;
+        src: url("assets/fonts/inter-tight-latin-700-normal.woff2") format("woff2");
+      }
+      :root {
+        --ground: #0c0a08;
+        --panel: #14110d;
+        --ink: #f3ecdf;
+        --ash: #8b8478;
+        --ember: #ff5a2a;
+        --ember-hi: #ffb48c;
+        --sans: "Inter Tight", sans-serif;
+        --serif: "Instrument Serif", serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 1080px;
+        height: 1350px;
+        overflow: hidden;
+        background: var(--ground);
+      }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1350px;
+        overflow: hidden;
+        background: var(--ground);
+        font-family: var(--sans);
+        color: var(--ink);
+      }
+      #far,
+      #grid,
+      #stage,
+      #hud,
+      #vig,
+      #grain,
+      #flash {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 1080px;
+        height: 1350px;
+      }
+      #far {
+        width: 2600px;
+        height: 3000px;
+        background:
+          radial-gradient(520px 520px at 30% 22%, rgba(255, 90, 42, 0.16), transparent 70%),
+          radial-gradient(620px 620px at 72% 46%, rgba(255, 150, 70, 0.1), transparent 70%),
+          radial-gradient(560px 560px at 38% 70%, rgba(255, 90, 42, 0.13), transparent 70%),
+          radial-gradient(700px 700px at 60% 12%, rgba(120, 70, 255, 0.06), transparent 70%);
+      }
+      #grid {
+        background-image: radial-gradient(circle, rgba(243, 236, 223, 0.2) 1.3px, transparent 1.9px);
+      }
+      #stage {
+        overflow: visible;
+      }
+      #stage text {
+        font-family: var(--sans);
+      }
+      #vig {
+        background: radial-gradient(ellipse 78% 70% at 50% 52%, transparent 52%, rgba(0, 0, 0, 0.62) 100%);
+        pointer-events: none;
+      }
+      #grain {
+        opacity: 0.11;
+        mix-blend-mode: overlay;
+        pointer-events: none;
+      }
+      #flash {
+        background: radial-gradient(circle at 50% 89%, rgba(255, 120, 60, 0.55), transparent 62%);
+        opacity: 0;
+        pointer-events: none;
+      }
+      /* ---------- type ---------- */
+      .blk {
+        position: absolute;
+        left: 72px;
+        width: 960px;
+        top: 100px;
+      }
+      .ln {
+        display: block;
+        white-space: nowrap;
+      }
+      .w {
+        display: inline-block;
+        opacity: 0;
+        will-change: transform, opacity, filter;
+      }
+      .lead {
+        font-weight: 500;
+        font-size: 50px;
+        line-height: 1.16;
+        letter-spacing: -0.012em;
+        color: rgba(243, 236, 223, 0.6);
+      }
+      .big {
+        font-weight: 700;
+        font-size: 88px;
+        line-height: 1.04;
+        letter-spacing: -0.038em;
+        color: var(--ink);
+      }
+      .em {
+        font-family: var(--serif);
+        font-style: italic;
+        font-weight: 400;
+        font-size: 150px;
+        line-height: 0.94;
+        letter-spacing: -0.022em;
+        color: var(--ember);
+        padding-bottom: 0.08em;
+      }
+      .em.xl {
+        font-size: 200px;
+      }
+      .em.xxl {
+        font-size: 228px;
+      }
+      .em.l2 {
+        font-size: 184px;
+      }
+      .em.lg {
+        font-size: 164px;
+      }
+      .em.ink {
+        color: var(--ink);
+      }
+      .gap {
+        display: block;
+        height: 26px;
+      }
+      .gap.s {
+        height: 10px;
+      }
+      #neutralWrap,
+      #wantWrap {
+        position: relative;
+        display: inline-block;
+      }
+      .strike {
+        position: absolute;
+        left: -2%;
+        width: 110%;
+        top: 54%;
+        height: 9px;
+        border-radius: 5px;
+        background: var(--ember);
+        transform-origin: 0 50%;
+      }
+      .echo {
+        position: absolute;
+        left: 0;
+        top: 0;
+        font-family: var(--serif);
+        font-style: italic;
+        font-size: 228px;
+        line-height: 0.94;
+        letter-spacing: -0.022em;
+        color: transparent;
+        -webkit-text-stroke: 1.6px var(--ember);
+        opacity: 0;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="27"
+      data-width="1080"
+      data-height="1350"
+      data-fps="30"
+    >
+      <div id="far"></div>
+      <div id="grid"></div>
+
+      <svg id="stage" viewBox="0 0 1080 1350" width="1080" height="1350">
+        <defs>
+          <radialGradient id="gDot">
+            <stop offset="0" stop-color="#ff7a3c" stop-opacity="0.75" />
+            <stop offset="0.35" stop-color="#ff5a2a" stop-opacity="0.28" />
+            <stop offset="1" stop-color="#ff5a2a" stop-opacity="0" />
+          </radialGradient>
+          <linearGradient id="gColumn" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ff5a2a" stop-opacity="0.34" />
+            <stop offset="1" stop-color="#ff5a2a" stop-opacity="0" />
+          </linearGradient>
+          <clipPath id="clipDigits"><rect x="-235" y="-176" width="470" height="196" /></clipPath>
+          <clipPath id="clipFeed"><rect x="-146" y="-246" width="292" height="522" rx="30" /></clipPath>
+          <filter id="blurGlow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="22" />
+          </filter>
+        </defs>
+
+        <g id="world">
+          <circle id="trail" cx="0" cy="1100" r="1100" fill="none" stroke="#ff5a2a" stroke-width="3" stroke-linecap="round" opacity="0.6" transform="rotate(-90 0 1100)" />
+          <circle id="mini" cx="0" cy="-120" r="120" fill="none" stroke="#ff5a2a" stroke-width="3" stroke-linecap="round" transform="rotate(90 0 -120)" />
+          <g id="days"></g>
+
+          <!-- B: snooze -->
+          <g transform="translate(1100 1100)">
+            <g id="gB" opacity="0">
+              <g id="bRays">
+                <path d="M-268 -262 L-300 -300 M-232 -272 L-240 -318 M-282 -226 L-328 -234" stroke="#ff5a2a" stroke-width="6" stroke-linecap="round" fill="none" />
+                <path d="M268 -262 L300 -300 M232 -272 L240 -318 M282 -226 L328 -234" stroke="#ff5a2a" stroke-width="6" stroke-linecap="round" fill="none" />
+              </g>
+              <g id="bCard">
+                <rect x="-250" y="-232" width="500" height="444" rx="46" fill="#14110d" stroke="rgba(243,236,223,0.2)" stroke-width="2" />
+                <circle id="bLed" cx="-198" cy="-190" r="7" fill="#ff5a2a" />
+                <text x="-178" y="-182" font-size="22" font-weight="600" letter-spacing="5" fill="#8b8478">ALARM</text>
+                <text x="204" y="-182" font-size="22" font-weight="600" letter-spacing="3" fill="#8b8478" text-anchor="end">AM</text>
+                <g clip-path="url(#clipDigits)">
+                  <g id="bDigits" font-size="172" font-weight="700" fill="#f3ecdf" text-anchor="middle" letter-spacing="-5">
+                    <text x="0" y="-22">6:00</text>
+                    <text x="0" y="198">6:09</text>
+                    <text x="0" y="418">6:18</text>
+                    <text x="0" y="638">6:27</text>
+                  </g>
+                </g>
+                <g id="bPill">
+                  <rect id="bPillFill" x="-190" y="68" width="380" height="102" rx="51" fill="#ff5a2a" opacity="0" />
+                  <rect x="-190" y="68" width="380" height="102" rx="51" fill="none" stroke="#f3ecdf" stroke-width="3" />
+                  <text x="6" y="131" font-size="34" font-weight="700" letter-spacing="9" fill="#f3ecdf" text-anchor="middle">SNOOZE</text>
+                </g>
+              </g>
+              <g id="bZ" font-family="Instrument Serif, serif" font-style="italic" fill="#8b8478">
+                <text class="z" x="214" y="-246" font-size="56" opacity="0" style="font-family: 'Instrument Serif'">z</text>
+                <text class="z" x="262" y="-296" font-size="80" opacity="0" style="font-family: 'Instrument Serif'">z</text>
+                <text class="z" x="322" y="-356" font-size="108" opacity="0" style="font-family: 'Instrument Serif'">z</text>
+              </g>
+            </g>
+          </g>
+
+          <!-- C: scroll -->
+          <g transform="translate(0 2200)">
+            <g id="gC" opacity="0">
+              <rect x="-160" y="-290" width="320" height="580" rx="50" fill="#14110d" stroke="#f3ecdf" stroke-width="3" />
+              <rect x="-38" y="-272" width="76" height="13" rx="6.5" fill="rgba(243,236,223,0.28)" />
+              <g clip-path="url(#clipFeed)">
+                <g id="feed"></g>
+              </g>
+              <rect x="-146" y="-246" width="292" height="522" rx="30" fill="none" stroke="rgba(243,236,223,0.1)" stroke-width="1.5" />
+            </g>
+          </g>
+
+          <!-- D: stairs -->
+          <g transform="translate(-1100 1100)">
+            <g id="gD" opacity="0">
+              <g id="columns"></g>
+              <polyline id="stairs" points="-430,200 -240,200 -240,120 -120,120 -120,40 0,40 0,-40 120,-40 120,-120 240,-120 240,-200 430,-200" fill="none" stroke="rgba(243,236,223,0.85)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+              <g id="treads" stroke="#ff5a2a" stroke-width="7" stroke-linecap="round">
+                <line class="tr" x1="-232" y1="120" x2="-128" y2="120" />
+                <line class="tr" x1="-112" y1="40" x2="-8" y2="40" />
+                <line class="tr" x1="8" y1="-40" x2="112" y2="-40" />
+                <line class="tr" x1="128" y1="-120" x2="232" y2="-120" />
+                <line class="tr" x1="248" y1="-200" x2="424" y2="-200" />
+              </g>
+            </g>
+          </g>
+        </g>
+
+        <!-- screen-space ring / question mark -->
+        <g id="qm" opacity="0">
+          <circle id="qGlow" cx="540" cy="880" r="300" fill="none" stroke="#ff5a2a" stroke-width="18" filter="url(#blurGlow)" opacity="0" />
+          <circle id="qArc" cx="540" cy="880" r="300" fill="none" stroke="#ff5a2a" stroke-width="3" stroke-linecap="round" />
+          <path id="qTail" d="M656.7 946.7 C 607.2 996.2 540 1004 540 1064 L 540 1116" fill="none" stroke="#ff5a2a" stroke-width="40" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1.2" stroke-dashoffset="1.1" opacity="0" />
+        </g>
+        <circle id="comet" cx="540" cy="880" r="300" fill="none" stroke="#ffb48c" stroke-width="6" stroke-linecap="round" opacity="0" />
+
+        <!-- the dot (screen space, projected from the world) -->
+        <g id="dotG">
+          <circle id="dotGlow" r="90" fill="url(#gDot)" />
+          <circle class="rip" r="20" fill="none" stroke="#ff5a2a" stroke-width="3" opacity="0" />
+          <circle class="rip" r="20" fill="none" stroke="#ff5a2a" stroke-width="3" opacity="0" />
+          <circle class="rip" r="20" fill="none" stroke="#ff5a2a" stroke-width="3" opacity="0" />
+          <ellipse id="dotCore" rx="16" ry="16" fill="#ff5a2a" />
+        </g>
+      </svg>
+
+      <div id="hud"></div>
+      <div id="flash"></div>
+      <div id="vig"></div>
+      <svg id="grain" viewBox="0 0 1080 1350" width="1080" height="1350">
+        <filter id="fGrain">
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="7" />
+          <feColorMatrix type="saturate" values="0" />
+        </filter>
+        <rect width="1080" height="1350" filter="url(#fGrain)" />
+      </svg>
+
+      <audio id="vo" class="clip" src="assets/vo.wav" data-start="0" data-duration="27" data-track-index="1" data-volume="1"></audio>
+      <audio id="bed" class="clip" src="assets/bed.wav" data-start="0" data-duration="27" data-track-index="2" data-volume="0.5"></audio>
+    </div>
+
+    <script>
+      (function () {
+        const TAU = Math.PI * 2;
+        const AX = 540,
+          AY = 880; // screen anchor the camera centres on
+        const R = 1100,
+          CY = 1100; // the big loop
+        const CIRC = TAU * R;
+        const Z_WIDE = 300 / R; // loop radius becomes 300px on screen
+        const $ = (s) => document.querySelector(s);
+        const $$ = (s) => Array.from(document.querySelectorAll(s));
+        const NS = "http://www.w3.org/2000/svg";
+        const svg = (tag, attrs, parent) => {
+          const el = document.createElementNS(NS, tag);
+          for (const k in attrs) el.setAttribute(k, attrs[k]);
+          if (parent) parent.appendChild(el);
+          return el;
+        };
+
+        /* ---------- state proxies (function props so updates survive suppressed seeks) ---------- */
+        let ready = false;
+        function state(init) {
+          const v = Object.assign({}, init);
+          const o = { v };
+          Object.keys(init).forEach((k) => {
+            o[k] = function (val) {
+              if (arguments.length) {
+                v[k] = val;
+                if (ready) apply();
+                return o;
+              }
+              return v[k];
+            };
+          });
+          return o;
+        }
+        const cam = state({ x: 0, y: -70, z: 1.7 });
+        const route = state({ p: 0 });
+        const orb = state({ a: 0 });
+        const dot = state({ ox: 0, oy: 0, r: 0, sx: 1, sy: 1, st: 1, glow: 1, mode: 0, px: 540, py: 580 });
+        const tail = state({ len: 0, o: 0 });
+        const q = state({ cx: 540, cy: 880, r: 300, w: 3, arc: 360, tail: 0 });
+
+        /* ---------- build: days around the loop ---------- */
+        const N_DAYS = 28;
+        const LIT = [1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0, 1, 0, 1];
+        const daysG = $("#days");
+        const dayEls = [];
+        for (let i = 0; i < N_DAYS; i++) {
+          const p = (i + 0.5) / N_DAYS;
+          const a = p * TAU;
+          const g = svg("g", { transform: `translate(${(R * Math.sin(a)).toFixed(1)} ${(CY - R * Math.cos(a)).toFixed(1)})` }, daysG);
+          const c = svg("circle", { r: 38, fill: "#0c0a08", stroke: "#8b8478", "stroke-width": 2 / Z_WIDE }, g);
+          dayEls.push({ c, p });
+        }
+
+        /* ---------- build: feed cards ---------- */
+        const feed = $("#feed");
+        const HARD = 4;
+        for (let i = 0; i < 22; i++) {
+          const top = -246 + 16 + i * 146;
+          const g = svg("g", { class: i === HARD ? "card hard" : "card" }, feed);
+          if (i === HARD) {
+            svg("rect", { x: -130, y: top, width: 260, height: 126, rx: 20, fill: "rgba(255,90,42,0.12)", stroke: "#ff5a2a", "stroke-width": 2.5 }, g);
+            svg("circle", { cx: -98, cy: top + 63, r: 13, fill: "none", stroke: "#ff5a2a", "stroke-width": 2.5 }, g);
+            const t = svg("text", { x: -72, y: top + 73, "font-size": 29, "font-weight": 700, fill: "#ff5a2a", "letter-spacing": -0.4 }, g);
+            t.textContent = "the hard thing";
+          } else {
+            svg("rect", { x: -130, y: top, width: 260, height: 126, rx: 20, fill: "rgba(243,236,223,0.045)", stroke: "rgba(243,236,223,0.13)", "stroke-width": 1.5 }, g);
+            svg("circle", { cx: -102, cy: top + 30, r: 14, fill: "rgba(243,236,223,0.2)" }, g);
+            svg("rect", { x: -78, y: top + 19, width: 84 + ((i * 37) % 60), height: 9, rx: 4.5, fill: "rgba(243,236,223,0.22)" }, g);
+            svg("rect", { x: -78, y: top + 35, width: 50 + ((i * 23) % 40), height: 7, rx: 3.5, fill: "rgba(243,236,223,0.12)" }, g);
+            svg("rect", { x: -114, y: top + 58, width: 228, height: 52, rx: 12, fill: `rgba(243,236,223,${i % 3 === 0 ? 0.11 : 0.07})` }, g);
+          }
+        }
+
+        /* ---------- build: stair glow columns ---------- */
+        const cols = $("#columns");
+        [
+          [-240, 120, 120],
+          [-120, 40, 120],
+          [0, -40, 120],
+          [120, -120, 120],
+          [240, -200, 190],
+        ].forEach(([x, y, w]) => svg("rect", { class: "col", x, y, width: w, height: 150, fill: "url(#gColumn)", opacity: 0 }, cols));
+
+        /* ---------- build: type ---------- */
+        // [word, time] pairs. Times are the VO word onsets.
+        const LEAD = 0.07;
+        const BLOCKS = [
+          { id: "tA", out: [2.3, -90, 0], lines: [
+            ["big", [["You", 0.0], ["are", 0.42], ["always", 0.58]]],
+            ["em xl", [["practicing", 0.96]]],
+            ["big", [["something.", 1.48]]],
+          ] },
+          { id: "tB", out: [6.42, 0, -80], lines: [
+            ["lead", [["Every", 3.4], ["time", 3.8], ["you", 4.06], ["hit", 4.24], ["snooze,", 4.42]]],
+            ["gap"],
+            ["big", [["you", 5.14], ["practice", 5.18]]],
+            ["em", [["giving", 5.46], ["up", 5.76]]],
+            ["em", [["on", 6.0], ["yourself.", 6.14]]],
+          ] },
+          { id: "tC", out: [10.08, 90, 0], lines: [
+            ["lead", [["Every", 7.0], ["time", 7.26], ["you", 7.48], ["scroll", 7.66], ["past", 7.94]]],
+            ["lead", [["the", 8.22], ["hard", 8.4], ["thing,", 8.6]]],
+            ["gap"],
+            ["big", [["you", 9.02], ["practice", 9.12]]],
+            ["em l2", [["avoiding", 9.4], ["it.", 9.78]]],
+          ] },
+          { id: "tD", out: [14.72, 0, 0], lines: [
+            ["lead", [["And", 10.52], ["every", 10.62], ["time", 10.9], ["you", 11.12], ["show", 11.26], ["up", 11.42]]],
+            ["lead", [["when", 11.62], ["you", 11.78], ["don’t", 11.9], ["feel", 12.06], ["like", 12.24], ["it,", 12.42]]],
+            ["gap"],
+            ["big", [["you", 13.02], ["practice", 13.18], ["becoming", 13.48]]],
+            ["em", [["someone", 13.86], ["you", 14.18]]],
+            ["em", [["can", 14.36], ["trust.", 14.52]]],
+          ] },
+          { id: "tE", out: [17.0, 0, -60], lines: [
+            ["big", [["There", 15.32], ["are", 15.52], ["no", 15.7]]],
+            ["em xl ash", [["neutral", 15.98]]],
+            ["big", [["days.", 16.44]]],
+          ] },
+          { id: "tF", out: [19.62, 0, -60], lines: [
+            ["big", [["You", 17.34], ["become", 17.56]]],
+            ["big", [["whatever", 17.96], ["you", 18.72]]],
+            ["em xxl", [["repeat.", 19.1]]],
+          ] },
+          { id: "tG1", out: [22.3, 0, -40], lines: [
+            ["lead", [["So", 19.96], ["the", 20.1], ["question", 20.24], ["isn’t", 20.58]]],
+            ["gap s"],
+            ["em lg ink", [["What", 21.26], ["do", 21.36], ["I", 21.52], ["want?", 21.66]]],
+          ] },
+          { id: "tG2", out: null, lines: [
+            ["big", [["What", 22.69], ["am", 23.07], ["I", 23.17]]],
+            ["em xxl", [["rehearsing", 23.33]]],
+          ] },
+        ];
+        const hud = $("#hud");
+        const words = [];
+        BLOCKS.forEach((b) => {
+          const blk = document.createElement("div");
+          blk.className = "blk";
+          blk.id = b.id;
+          b.lines.forEach(([cls, ws]) => {
+            if (cls.startsWith("gap")) {
+              const g = document.createElement("span");
+              g.className = cls;
+              blk.appendChild(g);
+              return;
+            }
+            const ln = document.createElement("span");
+            ln.className = "ln " + cls;
+            blk.appendChild(ln);
+            let host = ln;
+            if (cls.includes("ash")) {
+              host = document.createElement("span");
+              host.id = "neutralWrap";
+              ln.appendChild(host);
+              ln.style.color = "var(--ash)";
+            }
+            if (b.id === "tG1" && cls.includes("em")) {
+              host = document.createElement("span");
+              host.id = "wantWrap";
+              ln.appendChild(host);
+            }
+            ws.forEach(([txt, t], i) => {
+              const w = document.createElement("span");
+              w.className = "w";
+              w.textContent = txt;
+              host.appendChild(w);
+              if (i < ws.length - 1) host.appendChild(document.createTextNode(" "));
+              words.push({ el: w, t, em: cls.includes("em") });
+            });
+            if (host !== ln) {
+              const s = document.createElement("span");
+              s.className = "strike";
+              host.appendChild(s);
+            }
+            if (b.id === "tF" && cls.includes("xxl")) {
+              ln.style.position = "relative";
+              for (let k = 0; k < 2; k++) {
+                const e = document.createElement("span");
+                e.className = "echo";
+                e.textContent = "repeat.";
+                ln.appendChild(e);
+              }
+            }
+          });
+          hud.appendChild(blk);
+        });
+
+        /* ---------- per-frame projection ---------- */
+        const elWorld = $("#world"),
+          elTrail = $("#trail"),
+          elMini = $("#mini"),
+          elDotG = $("#dotG"),
+          elCore = $("#dotCore"),
+          elGlow = $("#dotGlow"),
+          elGrid = $("#grid"),
+          elFar = $("#far"),
+          elComet = $("#comet"),
+          elArc = $("#qArc"),
+          elQGlow = $("#qGlow"),
+          elTailPath = $("#qTail");
+        const tailLen = elTailPath.getTotalLength();
+        const MINI_C = TAU * 120;
+
+        function apply() {
+          const c = cam.v,
+            d = dot.v,
+            z = c.z;
+          const tx = AX - c.x * z,
+            ty = AY - c.y * z;
+          elWorld.setAttribute("transform", `translate(${tx.toFixed(2)} ${ty.toFixed(2)}) scale(${z.toFixed(5)})`);
+
+          // background parallax
+          const gs = 96 * Math.max(z, 0.5);
+          elGrid.style.backgroundSize = gs.toFixed(2) + "px " + gs.toFixed(2) + "px";
+          elGrid.style.backgroundPosition = (tx % gs).toFixed(2) + "px " + (ty % gs).toFixed(2) + "px";
+          elGrid.style.opacity = (0.35 + 0.65 * Math.min(1, (z - 0.27) / 0.7)).toFixed(3);
+          elFar.style.transform = `translate(${(-760 - c.x * 0.16).toFixed(1)}px, ${(-560 - c.y * 0.2).toFixed(1)}px)`;
+
+          // loop trail + intro ring
+          const p = route.v.p;
+          elTrail.setAttribute("stroke-dasharray", (Math.min(p, 1) * CIRC).toFixed(1) + " " + (CIRC + 50));
+          const laps = orb.v.a / TAU;
+          elMini.setAttribute("stroke-dasharray", (Math.min(laps, 1) * MINI_C).toFixed(1) + " " + (MINI_C + 20));
+          elTrail.setAttribute("stroke-width", (3 / z).toFixed(2));
+          elMini.setAttribute("stroke-width", (3 / z).toFixed(2));
+          elMini.setAttribute("opacity", (0.45 + 0.4 * Math.min(1, Math.max(0, laps - 1))).toFixed(3));
+
+          // dot position
+          let sx, sy;
+          if (d.mode === 0) {
+            const a = p * TAU;
+            const rr = 120;
+            const wx = R * Math.sin(a) + d.ox - rr * Math.sin(orb.v.a);
+            const wy = CY - R * Math.cos(a) + d.oy - rr + rr * Math.cos(orb.v.a);
+            sx = tx + wx * z;
+            sy = ty + wy * z;
+          } else if (d.mode === 1) {
+            sx = d.px;
+            sy = d.py;
+          } else {
+            const pt = elTailPath.getPointAtLength(q.v.tail * tailLen);
+            sx = pt.x;
+            sy = pt.y;
+          }
+          elDotG.setAttribute("transform", `translate(${sx.toFixed(2)} ${sy.toFixed(2)})`);
+          const st = d.st;
+          elCore.setAttribute("rx", Math.max(0, d.r * d.sx * st).toFixed(2));
+          elCore.setAttribute("ry", Math.max(0, (d.r * d.sy) / Math.sqrt(st)).toFixed(2));
+          elCore.setAttribute("transform", st !== 1 ? `rotate(${((p % 1) * 360).toFixed(2)})` : "");
+          elGlow.setAttribute("r", Math.max(0, d.r * 5.2).toFixed(1));
+          elGlow.setAttribute("opacity", d.glow.toFixed(3));
+
+          // comet tail on the loop (screen space, valid once the camera is wide)
+          const tl_ = tail.v.len;
+          const cC = TAU * 300;
+          elComet.setAttribute("stroke-dasharray", (tl_ * cC).toFixed(1) + " " + (cC + 40));
+          elComet.setAttribute("transform", `rotate(${(((p - tl_) % 1) * 360 - 90).toFixed(2)} 540 880)`);
+          elComet.setAttribute("opacity", tail.v.o.toFixed(3));
+
+          // ring -> question mark
+          const qq = q.v;
+          const qc = TAU * qq.r;
+          [elArc, elQGlow].forEach((el) => {
+            el.setAttribute("cx", qq.cx.toFixed(2));
+            el.setAttribute("cy", qq.cy.toFixed(2));
+            el.setAttribute("r", qq.r.toFixed(2));
+            el.setAttribute("stroke-dasharray", ((qq.arc / 360) * qc).toFixed(1) + " " + (qc + 60));
+            el.setAttribute("transform", `rotate(-170 ${qq.cx.toFixed(2)} ${qq.cy.toFixed(2)})`);
+          });
+          elArc.setAttribute("stroke-width", qq.w.toFixed(2));
+          elQGlow.setAttribute("stroke-width", (qq.w * 1.4 + 8).toFixed(2));
+          elTailPath.setAttribute("stroke-dashoffset", (1.1 * (1 - qq.tail)).toFixed(4));
+        }
+
+        /* ---------- pivots (parent-space coordinates, immune to bbox changes) ---------- */
+        gsap.set("#bCard", { svgOrigin: "0 -10" });
+        gsap.set("#bPill", { svgOrigin: "0 119" });
+        gsap.set("#bRays", { svgOrigin: "0 -200" });
+        gsap.set("#gC", { svgOrigin: "0 0" });
+        gsap.set(".hard", { svgOrigin: "0 417" });
+        gsap.set("#qm", { svgOrigin: "540 940" });
+        dayEls.forEach(({ c }) => gsap.set(c, { svgOrigin: "0 0" }));
+        $$(".tr").forEach((l) => gsap.set(l, { svgOrigin: (+l.getAttribute("x1") + +l.getAttribute("x2")) / 2 + " " + l.getAttribute("y1") }));
+
+        /* ---------- timeline ---------- */
+        const tl = gsap.timeline({ paused: true, defaults: { overwrite: false } });
+        const P = (obj, vars, t) => tl.to(obj, vars, t);
+        // set-then-tween: safe to reuse on one element and to scrub backwards
+        const hit = (target, from, to, t) => {
+          tl.set(target, from, t);
+          tl.to(target, to, t);
+        };
+        const ripple = (t, r0, r1, op, dur, each) => {
+          $$(".rip").forEach((el, i) => hit(el, { attr: { r: r0 }, opacity: op }, { attr: { r: r1 }, opacity: 0, duration: dur, ease: "power2.out" }, t + i * each));
+        };
+
+        // words in, synced to the voice
+        words.forEach(({ el, t, em }) => {
+          tl.fromTo(
+            el,
+            { opacity: 0, y: em ? 46 : 30, rotation: em ? 2.5 : 0, filter: "blur(12px)" },
+            { opacity: 1, y: 0, rotation: 0, filter: "blur(0px)", duration: em ? 0.6 : 0.42, ease: "power3.out" },
+            Math.max(0, t - LEAD)
+          );
+        });
+        // blocks out, pushed in the direction the camera leaves
+        BLOCKS.forEach((b) => {
+          if (!b.out) return;
+          const [t, dx, dy] = b.out;
+          tl.to("#" + b.id, { x: dx, y: dy, opacity: 0, filter: "blur(14px)", scale: dx === 0 && dy === 0 ? 0.9 : 1, transformOrigin: "20% 50%", duration: b.id === "tG1" ? 0.28 : 0.38, ease: "power2.in" }, t);
+        });
+
+        /* --- A. the dot arrives and starts a loop (0 - 2.2) --- */
+        P(dot, { r: 16, duration: 0.5, ease: "back.out(2.6)" }, 0.0);
+        ripple(0.1, 16, 150, 0.8, 0.9, 0.14);
+        P(cam, { z: 1.12, duration: 2.12, ease: "power2.out" }, 0);
+        P(orb, { a: TAU * 2, duration: 1.75, ease: "power1.inOut" }, 0.3);
+
+        /* --- transit A -> B (2.2 - 3.5) --- */
+        const transit = (t0, dur, p1, cx, cy, zdip) => {
+          P(route, { p: p1, duration: dur, ease: "power2.inOut" }, t0);
+          P(cam, { x: cx, y: cy, duration: dur + 0.12, ease: "power3.inOut" }, t0 - 0.04);
+          P(cam, { z: zdip, duration: dur * 0.5, ease: "power2.in" }, t0 - 0.04);
+          P(cam, { z: 1.0, duration: dur * 0.5 + 0.12, ease: "power2.out" }, t0 - 0.04 + dur * 0.5);
+          P(dot, { st: 1.7, duration: dur * 0.45, ease: "power2.in" }, t0);
+          P(dot, { st: 1, duration: dur * 0.5, ease: "power2.out" }, t0 + dur * 0.5);
+        };
+        transit(2.22, 1.28, 0.25, 1100, 1100, 0.8);
+        tl.to("#mini", { opacity: 0, duration: 0.5 }, 3.0);
+
+        /* --- B. snooze (3.0 - 6.5) --- */
+        tl.fromTo("#gB", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 2.85);
+        tl.fromTo("#bCard", { scale: 0.86, y: 60 }, { scale: 1, y: 0, duration: 0.75, ease: "back.out(1.5)" }, 2.9);
+        // ringing
+        tl.fromTo("#bRays", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(3)" }, 3.45);
+        tl.to("#bRays", { opacity: 0.25, duration: 0.07, repeat: 9, yoyo: true, ease: "none" }, 3.72);
+        tl.to("#bCard", { rotation: 1.8, duration: 0.055, repeat: 15, yoyo: true, ease: "sine.inOut" }, 3.55);
+        tl.to("#bLed", { opacity: 0.2, duration: 0.11, repeat: 7, yoyo: true, ease: "none" }, 3.55);
+        // dot hovers over the button
+        P(dot, { oy: 28, duration: 0.5, ease: "power2.out" }, 3.55);
+        const TAPS = [4.46, 5.02, 5.56];
+        TAPS.forEach((t, i) => {
+          P(dot, { oy: 118, duration: 0.13, ease: "power3.in" }, t - 0.13);
+          P(dot, { sx: 1.35, sy: 0.7, duration: 0.06, ease: "power2.out" }, t - 0.01);
+          P(dot, { sx: 1, sy: 1, duration: 0.3, ease: "elastic.out(1.2,0.5)" }, t + 0.06);
+          P(dot, { oy: 28, duration: 0.3, ease: "power2.out" }, t + 0.07);
+          P(dot, { r: 16 - (i + 1) * 1.6, duration: 0.3, ease: "power2.out" }, t);
+          hit("#bPillFill", { opacity: 0.85 }, { opacity: 0, duration: 0.45, ease: "power2.out" }, t);
+          hit("#bPill", { scale: 0.93 }, { scale: 1, duration: 0.4, ease: "back.out(3)" }, t);
+          tl.to("#bDigits", { y: -220 * (i + 1), duration: 0.42, ease: "back.out(1.4)" }, t + 0.02);
+          tl.to("#bCard", { y: 12 * (i + 1), rotation: -1.1 * (i + 1), duration: 0.5, ease: "power3.out" }, t);
+          const zEl = $$(".z")[i];
+          tl.fromTo(zEl, { opacity: 0, x: -14, y: 30, rotation: -12 }, { opacity: 0.9, x: 0, y: 0, rotation: 6, duration: 0.5, ease: "power2.out" }, t + 0.05);
+          tl.to(zEl, { opacity: 0, x: 30, y: -50, duration: 0.9, ease: "power1.in" }, t + 0.7);
+        });
+        tl.to("#bRays", { opacity: 0, scale: 0.7, duration: 0.2, ease: "power2.in" }, TAPS[0]);
+        tl.to("#bLed", { opacity: 0.15, duration: 0.2 }, TAPS[0]);
+        tl.to("#bCard", { opacity: 0.5, duration: 0.7, ease: "power2.out" }, 5.75);
+        P(dot, { glow: 0.55, duration: 0.7 }, 5.7);
+        P(cam, { z: 1.07, duration: 2.6, ease: "none" }, 3.6);
+
+        /* --- transit B -> C (6.3 - 7.5) --- */
+        P(dot, { oy: 0, duration: 0.3, ease: "power2.in" }, 6.2);
+        transit(6.34, 1.1, 0.5, 0, 2200, 0.82);
+        tl.to("#gB", { opacity: 0, duration: 0.4, ease: "power1.in" }, 6.5);
+
+        /* --- C. scroll (6.9 - 10.2) --- */
+        tl.fromTo("#gC", { opacity: 0 }, { opacity: 1, duration: 0.4, ease: "power2.out" }, 6.75);
+        tl.fromTo("#gC", { scale: 0.88, y: 70 }, { scale: 1, y: 0, duration: 0.7, ease: "back.out(1.4)" }, 6.75);
+        P(dot, { ox: 84, oy: 150, duration: 0.38, ease: "power2.inOut" }, 7.2);
+        const FLICKS = [
+          [7.66, -219, 0.5],
+          [8.16, -219, 0.5],
+          [8.98, -440, 0.4],
+          [9.42, -440, 0.4],
+        ];
+        let fy = 0;
+        FLICKS.forEach(([t, dy, dur], i) => {
+          fy += dy;
+          tl.to("#feed", { y: fy, duration: dur, ease: "power3.out" }, t);
+          P(dot, { oy: -30, sy: 1.3, sx: 0.85, duration: 0.2, ease: "power2.out" }, t - 0.04);
+          P(dot, { oy: 150, sy: 1, sx: 1, duration: 0.26, ease: "power2.inOut" }, t + 0.18);
+        });
+        // the hard thing: hesitate, then flick it away
+        tl.fromTo(".hard", { scale: 1 }, { scale: 1.06, duration: 0.22, repeat: 1, yoyo: true, ease: "sine.inOut" }, 8.48);
+        P(dot, { oy: 96, ox: 70, duration: 0.2, ease: "power2.out" }, 8.6);
+        P(dot, { ox: 76, duration: 0.05, repeat: 3, yoyo: true, ease: "sine.inOut" }, 8.72);
+        P(dot, { ox: 84, duration: 0.1 }, 8.94);
+        P(dot, { r: 9.8, duration: 0.3, ease: "power2.out" }, 9.0);
+        P(dot, { r: 8.6, duration: 0.3, ease: "power2.out" }, 9.44);
+        // endless feed
+        tl.to("#feed", { y: fy - 1000, duration: 0.95, ease: "power1.in" }, 9.82);
+        P(dot, { oy: -30, duration: 0.12, ease: "power2.out" }, 9.88);
+        P(dot, { glow: 0.4, duration: 0.6 }, 9.3);
+        P(cam, { z: 1.07, duration: 2.4, ease: "none" }, 7.56);
+
+        /* --- transit C -> D (10.05 - 11.0) --- */
+        P(dot, { ox: 0, oy: 0, duration: 0.3, ease: "power2.in" }, 10.0);
+        transit(10.08, 0.92, 0.75, -1100, 1100, 0.84);
+        tl.to("#gC", { opacity: 0, duration: 0.35, ease: "power1.in" }, 10.2);
+
+        /* --- D. show up (10.5 - 14.8) --- */
+        tl.fromTo("#gD", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 10.4);
+        const stairs = $("#stairs");
+        const sLen = stairs.getTotalLength();
+        tl.fromTo(stairs, { strokeDasharray: sLen, strokeDashoffset: sLen }, { strokeDashoffset: 0, duration: 1.1, ease: "power2.inOut" }, 10.4);
+        gsap.set(".tr", { opacity: 0, scaleX: 0 });
+        const STEP = [
+          [-180, 120],
+          [-60, 40],
+          [60, -40],
+          [180, -120],
+          [318, -200],
+        ];
+        const HOPS = [
+          [11.2, 0.5],
+          [11.86, 0.42],
+          [12.42, 0.38],
+          [12.96, 0.34],
+          [13.46, 0.32],
+        ];
+        const RAD = [8.6, 11, 13.5, 16, 18.5, 21];
+        const restY = (y, r) => y - r - 4;
+        // settle on the ground, small and dim
+        P(dot, { ox: -318, duration: 0.5, ease: "power2.out" }, 10.55);
+        P(dot, { oy: restY(200, RAD[0]), duration: 0.5, ease: "bounce.out" }, 10.55);
+        // hesitation
+        P(dot, { ox: -334, sx: 0.9, duration: 0.22, ease: "sine.inOut" }, 10.96);
+        HOPS.forEach(([t, dur], i) => {
+          const [x, y] = STEP[i];
+          const y0 = i === 0 ? 200 : STEP[i - 1][1];
+          const peak = restY(y, RAD[i + 1]) - (i === 0 ? 46 : 60);
+          P(dot, { sx: 0.8, sy: 1.25, duration: 0.1, ease: "power2.out" }, t);
+          P(dot, { ox: x, duration: dur, ease: "power1.inOut" }, t);
+          P(dot, { oy: peak, duration: dur * 0.55, ease: "power2.out" }, t);
+          P(dot, { oy: restY(y, RAD[i + 1]), duration: dur * 0.45, ease: "power2.in" }, t + dur * 0.55);
+          const land = t + dur;
+          P(dot, { sx: 1.4, sy: 0.62, duration: 0.07, ease: "power2.out" }, land - 0.02);
+          P(dot, { sx: 1, sy: 1, duration: 0.4, ease: "elastic.out(1.3,0.45)" }, land + 0.05);
+          P(dot, { r: RAD[i + 1], duration: 0.35, ease: "back.out(3)" }, land);
+          P(dot, { glow: 0.5 + (i + 1) * 0.12, duration: 0.3 }, land);
+          tl.to($$(".tr")[i], { opacity: 1, scaleX: 1, duration: 0.35, ease: "back.out(2)" }, land);
+          tl.fromTo($$(".col")[i], { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, land);
+        });
+        // someone you can trust
+        P(dot, { r: 25, glow: 1.25, duration: 0.5, ease: "back.out(2.5)" }, 13.84);
+        ripple(13.86, 24, 210, 0.85, 1.0, 0.16);
+        tl.to(".tr", { attr: { "stroke-width": 11 }, duration: 0.25, yoyo: true, repeat: 1, stagger: { each: 0.05, from: "end" } }, 13.86);
+        P(cam, { y: 1050, z: 1.08, duration: 3.5, ease: "sine.inOut" }, 11.12);
+
+        /* --- E. pull out: the whole loop, no neutral days (14.7 - 17.2) --- */
+        P(dot, { ox: 0, oy: 0, r: 20, glow: 1, duration: 0.55, ease: "power2.inOut" }, 14.66);
+        P(cam, { x: 0, y: CY, z: Z_WIDE, duration: 1.15, ease: "power3.inOut" }, 14.66);
+        tl.to("#gD", { opacity: 0, duration: 0.4, ease: "power1.in" }, 14.7);
+        tl.to("#trail", { opacity: 0.9, duration: 0.6 }, 15.0);
+        const LAP0 = 15.3,
+          LAPD = 1.9;
+        P(route, { p: 1.75, duration: LAPD, ease: "none" }, LAP0);
+        P(tail, { len: 0.05, o: 0.9, duration: 0.3 }, 15.8);
+        dayEls.forEach(({ c, p }, i) => {
+          const order = (i - Math.floor(0.75 * N_DAYS) + N_DAYS) % N_DAYS;
+          tl.fromTo(c, { scale: 0 }, { scale: 1, duration: 0.4, ease: "back.out(2.4)" }, 15.36 + order * 0.016);
+          const pass = LAP0 + ((p - 0.75 + 1) % 1) * LAPD;
+          if (LIT[i]) {
+            tl.to(c, { attr: { fill: "#ff5a2a", stroke: "#ff5a2a" }, duration: 0.08 }, pass);
+            hit(c, { scale: 1.9 }, { scale: 1.05, duration: 0.45, ease: "power3.out" }, pass);
+          } else {
+            tl.to(c, { attr: { stroke: "#3b352d" }, scale: 0.55, duration: 0.35, ease: "power2.out" }, pass);
+          }
+        });
+        tl.fromTo("#neutralWrap .strike", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "power3.inOut" }, 16.36);
+
+        /* --- F. you become whatever you repeat (17.2 - 19.9) --- */
+        tl.set("#qm", { opacity: 1 }, 17.22);
+        tl.set("#trail", { opacity: 0 }, 17.22);
+        // keep the lap speed, accelerate, then settle exactly at the top of the loop
+        const V0 = 1 / LAPD,
+          V1 = 3,
+          ACC_D = 2.1;
+        const ACC = (V1 - V0) / ACC_D;
+        const dAcc = V0 * ACC_D + 0.5 * ACC * ACC_D * ACC_D;
+        P(route, { p: 1.75 + dAcc, duration: ACC_D, ease: (u) => (V0 * ACC_D * u + 0.5 * ACC * ACC_D * ACC_D * u * u) / dAcc }, 17.2);
+        const dDec = 7 - (1.75 + dAcc);
+        const DEC_D = (2 * dDec) / V1;
+        P(route, { p: 7, duration: DEC_D, ease: "power1.out" }, 17.2 + ACC_D);
+        P(tail, { len: 0.3, duration: 1.6, ease: "power2.in" }, 17.3);
+        P(dot, { st: 1.9, duration: 1.6, ease: "power2.in" }, 17.3);
+        P(dot, { st: 1, duration: DEC_D, ease: "power1.out" }, 17.2 + ACC_D);
+        P(tail, { len: 0, duration: DEC_D, ease: "power1.out" }, 17.2 + ACC_D);
+        P(tail, { o: 0, duration: 0.2 }, 17.2 + ACC_D + DEC_D - 0.2);
+        P(q, { w: 20, duration: 2.5, ease: "power1.in" }, 17.3);
+        tl.to("#qGlow", { opacity: 0.75, duration: 2.5, ease: "power1.in" }, 17.3);
+        dayEls.forEach(({ c }, i) => {
+          tl.to(c, { scale: 0, duration: 0.5, ease: "power2.in" }, 17.25 + ((i * 5) % N_DAYS) * 0.022);
+        });
+        $$(".echo").forEach((e, k) => {
+          tl.fromTo(e, { opacity: 0, y: 0 }, { opacity: 0.42 - k * 0.2, y: (k + 1) * 30, duration: 0.6, ease: "power3.out" }, 19.14 + k * 0.07);
+        });
+        P(dot, { r: 22, duration: 1.2 }, 18.2);
+
+        /* --- G. the question (19.96 - 27) --- */
+        // strike "What do I want?"
+        // ring opens into the hook of a question mark
+        P(q, { arc: 215, duration: 0.75, ease: "power3.inOut" }, 22.4);
+        P(q, { r: 165, cy: 830, w: 40, duration: 0.8, ease: "power3.inOut" }, 22.4);
+        tl.to("#qGlow", { opacity: 0.4, duration: 0.8 }, 22.4);
+        tl.set("#qTail", { opacity: 1 }, 22.98);
+        P(q, { tail: 1, duration: 0.3, ease: "power2.in" }, 23.0);
+        // the dot becomes the point
+        tl.set(dot, { mode: 2 }, 23.0);
+        tl.set(dot, { mode: 1, px: 540, py: 1116 }, 23.3);
+        P(dot, { py: 1208, duration: 0.14, ease: "power2.in" }, 23.3);
+        P(dot, { r: 28, duration: 0.3, ease: "back.out(3)" }, 23.42);
+        P(dot, { sx: 1.45, sy: 0.6, duration: 0.07, ease: "power2.out" }, 23.42);
+        P(dot, { sx: 1, sy: 1, duration: 0.6, ease: "elastic.out(1.4,0.4)" }, 23.5);
+        ripple(23.44, 28, 330, 0.9, 1.3, 0.2);
+        hit("#flash", { opacity: 0.9 }, { opacity: 0, duration: 1.4, ease: "power2.out" }, 23.44);
+        hit("#qm", { scale: 1.06 }, { scale: 1, duration: 0.9, ease: "elastic.out(1,0.5)" }, 23.44);
+        P(dot, { glow: 1.5, duration: 0.3 }, 23.44);
+        // slow breathing hold
+        tl.to("#qGlow", { opacity: 0.8, duration: 1.05, repeat: 2, yoyo: true, ease: "sine.inOut" }, 23.8);
+        P(dot, { glow: 0.9, duration: 1.05, repeat: 2, yoyo: true, ease: "sine.inOut" }, 23.8);
+        ripple(25.0, 28, 200, 0.5, 1.5, 0.2);
+        tl.to("#stage", { scale: 1.03, transformOrigin: "540px 880px", duration: 3.5, ease: "sine.inOut" }, 23.5);
+        tl.to("#hud", { scale: 1.015, transformOrigin: "540px 300px", duration: 3.5, ease: "sine.inOut" }, 23.5);
+        tl.to({}, { duration: 0.01 }, 26.99);
+
+        /* ---------- strike through "What do I want?" (geometry measured from the laid-out line) ---------- */
+        const SX0 = 50,
+          SX1 = 984,
+          SYK = 256;
+        tl.set(dot, { mode: 1, px: 540, py: 580 }, 21.7);
+        P(dot, { px: SX0, py: SYK, duration: 0.3, ease: "power2.inOut" }, 21.72);
+        P(dot, { px: SX1, duration: 0.3, ease: "power3.inOut" }, 22.02);
+        P(dot, { sx: 1.5, sy: 0.75, duration: 0.14, yoyo: true, repeat: 1 }, 22.02);
+        tl.fromTo("#wantWrap .strike", { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: "power3.inOut" }, 22.02);
+        // swing down the right side to where the hook ends
+        P(dot, { px: 656.7, duration: 0.62, ease: "power2.in" }, 22.36);
+        P(dot, { py: 946.7, duration: 0.62, ease: "sine.inOut" }, 22.36);
+        P(dot, { r: 20, duration: 0.5 }, 22.36);
+
+        ready = true;
+        apply();
+        window.__timelines = window.__timelines || {};
+        window.__timelines["main"] = tl;
+        tl.seek(0);
+        apply();
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(apply);
+      })();
+    </script>
+  </body>
+</html>
